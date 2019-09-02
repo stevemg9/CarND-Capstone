@@ -1,8 +1,10 @@
 #!/usr/bin/env python
-
+import numpy as np
 import rospy
 from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint
+from std_msgs.msg import Int32
+from scipy.spatial import KDTree
 
 import math
 
@@ -21,8 +23,8 @@ as well as to verify your TL classifier.
 TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
-LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
-MAX_DECEL = 0.5
+LOOKAHEAD_WPS = 50 # Number of waypoints we will publish. You can change this number
+MAX_DECEL = 5.0
 
 
 
@@ -32,12 +34,13 @@ class WaypointUpdater(object):
 
     rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
     rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
-    rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
+    
+    print("Init WaypointUpdater")
 
     # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
+    rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
 
-
-    self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
+    self.final_waypoints_pub = rospy.Publisher('/final_waypoints', Lane, queue_size=1)
 
     # Member variables for WaypointUpdater
     self.lane = None
@@ -47,7 +50,7 @@ class WaypointUpdater(object):
     self.waypoint_tree   = None
     self.stopline_wp_idx = None
 
-    rospy.spin()
+    self.loop()
 
   def loop(self):
     rate = rospy.Rate(50)
@@ -62,6 +65,7 @@ class WaypointUpdater(object):
     # Getting current position of the vehicle
     x = self.pose.pose.position.x
     y = self.pose.pose.position.y
+
     # Finding closest waypoint to vehicle in KD Tree
     closest_idx = self.waypoint_tree.query([x, y], 1)[1]
 
@@ -84,7 +88,6 @@ class WaypointUpdater(object):
 
   def publish_waypoints(self, closest_idx):
     lane = Lane()
-    lane.header = self.base_waypoints.header
     lane.waypoints = self.base_waypoints.waypoints[closest_idx : closest_idx + LOOKAHEAD_WPS]
     self.final_waypoints_pub.publish(lane)
 
@@ -129,11 +132,12 @@ class WaypointUpdater(object):
     # Getting waypoints from ROS message
     self.base_waypoints = waypoints
     if not self.waypoints_2d:
-      self.waypoints_2d = [[waypoint.pose.pose.position_x, waypoint.pose.pose.position_y]] for waypoint in waypoints.waypoints]
+      self.waypoints_2d = [[waypoint.pose.pose.position.x, waypoint.pose.pose.position.y] for waypoint in waypoints.waypoints]
       self.waypoint_tree = KDTree(self.waypoints_2d)
 
   def traffic_cb(self, msg):
-    self.stopline_wp_idx_ = msg.data
+    #self.stopline_wp_idx_ = msg.data
+    pass
 
   def obstacle_cb(self, msg):
     # TODO: Callback for /obstacle_waypoint message. We will implement it later
