@@ -37,7 +37,7 @@ class WaypointUpdater(object):
     rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
     rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
     rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
-    rospy.Subscriber('/vehicle/traffic_lights', TrafficLightArray, self.traffic_cheat)
+    #rospy.Subscriber('/vehicle/traffic_lights', TrafficLightArray, self.traffic_cheat)
 
     # ROS Publisher for Final Waypoints
     self.final_waypoints_pub = rospy.Publisher('/final_waypoints', Lane, queue_size=1)
@@ -47,7 +47,7 @@ class WaypointUpdater(object):
     self.base_waypoints  = None
     self.waypoints_2d    = None
     self.waypoint_tree   = None
-    self.stopline_wp_idx = None
+    self.stopline_wp_idx = -1
     self.traffic_lights  = []
     self.stop_line_positions = []
     self.config = yaml.load(rospy.get_param("/traffic_light_config"))
@@ -55,7 +55,7 @@ class WaypointUpdater(object):
     self.loop()
 
   def loop(self):
-    rate = rospy.Rate(50)
+    rate = rospy.Rate(10)
     while not rospy.is_shutdown():
       if self.pose and self.base_waypoints:
         # Getting the closest waypoint to the vehicle
@@ -101,17 +101,17 @@ class WaypointUpdater(object):
     farthest_idx = closest_idx + LOOKAHEAD_WPS
     base_lane = self.base_waypoints.waypoints[closest_idx : farthest_idx]
 
-    #if self.stopline_wp_idx_ == -1 or (self.stopline_wp_idx_ >= farthest_idx):
-    #  lane.waypoints = base_waypoints
-    #else:
-    #  lane.waypoints = self.decelerate_waypoints(base_waypoints, closest_idx)
-    for light in self.traffic_lights:
-      if light[0] > closest_idx and light[0] < farthest_idx and light[1] == 0:
-        self.stopline_wp_idx = light[0]
-        lane.waypoints = self.decelerate_waypoints(base_lane, closest_idx)
-        return lane
+    if self.stopline_wp_idx == -1 or (self.stopline_wp_idx >= farthest_idx):
+      lane.waypoints = base_lane
+    else:
+      lane.waypoints = self.decelerate_waypoints(base_lane, closest_idx)
+    #for light in self.traffic_lights:
+    #  if light[0] > closest_idx and light[0] < farthest_idx and light[1] == 0:
+    #    self.stopline_wp_idx = light[0]
+    #   lane.waypoints = self.decelerate_waypoints(base_lane, closest_idx)
+    #    return lane
 
-    lane.waypoints = base_lane
+    # lane.waypoints = base_lane
     return lane
 
   def decelerate_waypoints(self, waypoints, closest_idx):
@@ -145,48 +145,48 @@ class WaypointUpdater(object):
       self.waypoint_tree = KDTree(self.waypoints_2d)
 
   def traffic_cb(self, msg):
-    self.stopline_wp_idx_ = msg.data
+    self.stopline_wp_idx = msg.data
 
-  def get_closest_waypoint_idx_to_tl(self, x, y):
-    # Finding closest waypoint to vehicle in KD Tree
-    closest_idx = self.waypoint_tree.query([x, y], 1)[1]
+  #def get_closest_waypoint_idx_to_tl(self, x, y):
+  #  # Finding closest waypoint to vehicle in KD Tree
+  #  closest_idx = self.waypoint_tree.query([x, y], 1)[1]
+  #
+  # # Extracting the closest coordinate and the coordinate from the previous
+  #  # index
+  #  closest_coord = self.waypoints_2d[closest_idx]
+  #  prev_coord = self.waypoints_2d[closest_idx - 1]
+  #
+  #  # Constructing hyperplane throught the closest coordinates
+  #  cl_vect = np.array(closest_coord)
+  #  prev_vect = np.array(prev_coord)
+  #  pos_vect = np.array([x, y])
+  #
+  #  val = np.dot(cl_vect - prev_vect, pos_vect - cl_vect)
+  #
+  #  # If waypoint is behind the vehicle, get the next waypoint
+  #  if (val > 0):
+  #    closest_idx = (closest_idx + 1) % len(self.waypoints_2d)
+  #  return closest_idx
 
-    # Extracting the closest coordinate and the coordinate from the previous
-    # index
-    closest_coord = self.waypoints_2d[closest_idx]
-    prev_coord = self.waypoints_2d[closest_idx - 1]
-
-    # Constructing hyperplane throught the closest coordinates
-    cl_vect = np.array(closest_coord)
-    prev_vect = np.array(prev_coord)
-    pos_vect = np.array([x, y])
-
-    val = np.dot(cl_vect - prev_vect, pos_vect - cl_vect)
-
-    # If waypoint is behind the vehicle, get the next waypoint
-    if (val > 0):
-      closest_idx = (closest_idx + 1) % len(self.waypoints_2d)
-    return closest_idx
-
-  def traffic_cheat(self, msg):
-    if not self.traffic_lights:
-      self.stop_line_positions = self.config['stop_line_positions']
-      for light in msg.lights:
-        min_idx = -1
-        min_dist = 999999999999
-        for i, pos in enumerate(self.stop_line_positions):
-          dist = math.sqrt( pow(pos[0] - light.pose.pose.position.x, 2) +
-                            pow(pos[1] - light.pose.pose.position.y, 2))
-          if dist < min_dist:
-            min_dist = dist
-            min_idx = i
-        idx = self.get_closest_waypoint_idx_to_tl(self.stop_line_positions[min_idx][0],
-                                                  self.stop_line_positions[min_idx][1])
-        state = light.state
-        self.traffic_lights.append([idx, state])
-    else:
-      for i, light in enumerate(msg.lights):
-        self.traffic_lights[i][1] = light.state
+  #def traffic_cheat(self, msg):
+  #  if not self.traffic_lights:
+  #    self.stop_line_positions = self.config['stop_line_positions']
+  #    for light in msg.lights:
+  #      min_idx = -1
+  #      min_dist = 999999999999
+  #      for i, pos in enumerate(self.stop_line_positions):
+  #        dist = math.sqrt( pow(pos[0] - light.pose.pose.position.x, 2) +
+  #                          pow(pos[1] - light.pose.pose.position.y, 2))
+  #        if dist < min_dist:
+  #          min_dist = dist
+  #          min_idx = i
+  #      idx = self.get_closest_waypoint_idx_to_tl(self.stop_line_positions[min_idx][0],
+  #                                                self.stop_line_positions[min_idx][1])
+  #      state = light.state
+  #      self.traffic_lights.append([idx, state])
+  #  else:
+  #    for i, light in enumerate(msg.lights):
+  #      self.traffic_lights[i][1] = light.state
 
   def get_waypoint_velocity(self, waypoint):
     return waypoint.twist.twist.linear.x
