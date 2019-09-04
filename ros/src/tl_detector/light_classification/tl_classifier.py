@@ -10,8 +10,7 @@ class TLClassifier(object):
     # Code to select different detection networks
     if is_site:
       if  (model_choice_num == 1) : # ssd_inception
-        model_path = graphs_dir + 'ssd_udacity/frozen_inference_graph.pb'
-        #'graph1b_real_ssd_inception_20k/frozen_inference_graph.pb'
+        model_path = graphs_dir + 'graph1b_real_ssd_inception_20k/frozen_inference_graph.pb'
       elif(model_choice_num == 2) : # faster_rcnn_inception
         model_path = graphs_dir + 'graph2b_real_faster_rcnn_inception_20k/frozen_inference_graph.pb'
       else : # ssd_inception is the default
