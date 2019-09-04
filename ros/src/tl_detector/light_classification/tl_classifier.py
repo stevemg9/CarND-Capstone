@@ -4,6 +4,8 @@ import numpy as np
 import os
 import cv2
 
+DEBUG = False
+
 class TLClassifier(object):
   def __init__(self, is_site,model_choice_num):
     graphs_dir = os.path.dirname(os.path.realpath(__file__)) + '/frozen_graphs/'
@@ -61,12 +63,20 @@ class TLClassifier(object):
 
     # Return the int of the traffic light if detected else UNKNOWN
     if classes[0]   == 1:
+      if DEBUG:
+        print("Green")
       return TrafficLight.GREEN
     elif classes[0] == 2:
+      if DEBUG:
+        print("Red")
       return TrafficLight.RED
     elif classes[0] == 3:
+      if DEBUG:
+        print("Yellow")
       return TrafficLight.YELLOW
     else:
+      if DEBUG:
+        print("Unknown")
       return TrafficLight.UNKNOWN
 
     return TrafficLight.UNKNOWN

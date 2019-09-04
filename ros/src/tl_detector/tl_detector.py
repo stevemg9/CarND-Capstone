@@ -43,7 +43,7 @@ class TLDetector(object):
     self.camera_image     = None
     self.config           = yaml.load(config_string)
     self.is_site          = self.config["is_site"]
-    self.model_source_num = 1 #1: ssd_inception(also default), 2:faster_rcnn_inception
+    self.model_source_num = 2 #1: ssd_inception(also default), 2:faster_rcnn_inception
     self.bridge           = CvBridge()
     
     # Class members for Classifier
@@ -210,6 +210,7 @@ class TLDetector(object):
     if(not self.has_image):
       self.prev_light_loc = None
       return False
+
 
     cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, 'bgr8')
 
