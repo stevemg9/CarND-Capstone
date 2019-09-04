@@ -14,8 +14,6 @@ class TLClassifier(object):
         #'graph1b_real_ssd_inception_20k/frozen_inference_graph.pb'
       elif(model_choice_num == 2) : # faster_rcnn_inception
         model_path = graphs_dir + 'graph2b_real_faster_rcnn_inception_20k/frozen_inference_graph.pb'
-      elif(model_choice_num == 3) : # faster_rcnn_resnet
-        model_path = graphs_dir + 'graph3b_real_faster_rcnn_resnet_20k/frozen_inference_graph.pb'
       else : # ssd_inception is the default
         model_path = graphs_dir + 'graph1b_real_ssd_inception_20k/frozen_inference_graph.pb'
     else:
@@ -23,8 +21,6 @@ class TLClassifier(object):
         model_path = graphs_dir + 'graph1a_sim_ssd_inception_20k/frozen_inference_graph.pb'
       elif(model_choice_num == 2) : # faster_rcnn_inception
         model_path = graphs_dir + 'graph2a_sim_faster_rcnn_inception_20k/frozen_inference_graph.pb'
-      elif(model_choice_num == 3) : # faster_rcnn_resnet
-        model_path = graphs_dir + 'graph3a_sim_faster_rcnn_resnet_20k/frozen_inference_graph.pb'
       else : # ssd_inception is the default
         model_path = graphs_dir + 'graph1a_sim_ssd_inception_20k/frozen_inference_graph.pb'
     
