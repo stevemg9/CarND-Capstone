@@ -17,7 +17,7 @@ import yaml
 
 STATE_COUNT_THRESHOLD = 3
 DEBUG = 0
-TRAINING = True
+TRAINING = False
 
 class TLDetector(object):
   def __init__(self):
