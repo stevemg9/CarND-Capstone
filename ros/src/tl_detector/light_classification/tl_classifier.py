@@ -3,6 +3,7 @@ import tensorflow as tf
 import numpy as np
 import os
 import cv2
+import rospy
 
 DEBUG = False
 
@@ -26,6 +27,7 @@ class TLClassifier(object):
         model_path = graphs_dir + 'graph1a_sim_ssd_inception_20k/frozen_inference_graph.pb'
     
     # Set up model graph and TF session
+    rospy.loginfo("Model Path %s", model_path)
     self.model_graph = tf.Graph()
     with self.model_graph.as_default():
       with tf.gfile.GFile(model_path, 'rb') as f:
@@ -63,20 +65,16 @@ class TLClassifier(object):
 
     # Return the int of the traffic light if detected else UNKNOWN
     if classes[0]   == 1:
-      if DEBUG:
-        print("Green")
+      rospy.loginfo("Traffic Light State: GREEN")
       return TrafficLight.GREEN
     elif classes[0] == 2:
-      if DEBUG:
-        print("Red")
+      rospy.loginfo("Traffic Light State: RED")
       return TrafficLight.RED
     elif classes[0] == 3:
-      if DEBUG:
-        print("Yellow")
+      rospy.loginfo("Traffic Light State: YELLOW")
       return TrafficLight.YELLOW
     else:
-      if DEBUG:
-        print("Unknown")
+      rospy.loginfo("Traffic Light State: UNKNOWN")
       return TrafficLight.UNKNOWN
 
     return TrafficLight.UNKNOWN

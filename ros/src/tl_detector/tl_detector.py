@@ -94,6 +94,10 @@ class TLDetector(object):
         msg (Image): image from car-mounted camera
 
     """
+    # Wait for waypoints to bo published
+    if not self.base_waypoints or not self.waypoint_tree:
+      return
+      
     #Everytime we have an image coming in , what do we do about it
     #if there is an image
     self.has_image = True

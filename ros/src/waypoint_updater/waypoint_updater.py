@@ -27,8 +27,6 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 LOOKAHEAD_WPS = 50 # Number of waypoints we will publish. You can change this number
 MAX_DECEL = 5.0
 
-
-
 class WaypointUpdater(object):
   def __init__(self):
     rospy.init_node('waypoint_updater')
@@ -55,13 +53,19 @@ class WaypointUpdater(object):
     self.loop()
 
   def loop(self):
-    # Operate loop at 50hz
     rate = rospy.Rate(50)
+    # Wait for base waypoints to be read into KD Tree
+    if not self.base_waypoints or not self.waypoint_tree:
+      rospy.loginfo("No waypoints received - skipping loop iteration.")
+      rate.sleep()
+    
+    # Operate loop at 50hz
     while not rospy.is_shutdown():
       if self.pose and self.base_waypoints:
         # Getting the closest waypoint to the vehicle
         closest_waypoint_idx = self.get_closest_waypoint_idx()
         # Publishing waypoints over ROS
+        rospy.loginfo("Publishing Waypoints")
         self.publish_waypoints(closest_waypoint_idx)
       rate.sleep()
 
@@ -152,6 +156,7 @@ class WaypointUpdater(object):
 
 
   def waypoints_cb(self, waypoints):
+    rospy.loginfo("Initial Base Waypoints Received")
     # Getting waypoints from ROS message
     self.base_waypoints = waypoints
     if not self.waypoints_2d:
